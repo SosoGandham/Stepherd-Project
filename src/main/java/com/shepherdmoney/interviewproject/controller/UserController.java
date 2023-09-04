@@ -22,13 +22,18 @@ public class UserController {
     public ResponseEntity<Integer> createUser(@RequestBody CreateUserPayload payload) {
         // TODO: Create an user entity with information given in the payload, store it in the database
         //       and return the id of the user in 200 OK response
+        //Validates the email and the name 
+        //If an information is missing then we will return "Bad Requeset"
         if(payload == null || StringUtils.isNullOrEmpty(payload.getEmail()) || StringUtils.isNullOrEmpty(payload.getName())){
             return new ResponseEntity<Integer>(0, null, HttpStatus.BAD_REQUEST);
         }
+        //Creates user object from the request input
         User u = new User();
         u.setEmail(payload.getEmail());
         u.setName(payload.getName());
+        //Saves the user record to the database
         userRepository.save(u);
+        //Returns the response with created user id 
         return new ResponseEntity<Integer>(u.getId(), null, HttpStatus.CREATED);
     }
 
@@ -40,13 +45,17 @@ public class UserController {
         //User u = new User();
         //u.setId(userId);
         try {
+            //Checking if user exists 
             User u = userRepository.getReferenceById(userId);
-
+        //Deleting the user if they exist
             userRepository.delete(u);
+            //Returning sucess response (successfully deleted)
             return new ResponseEntity<String>("User " + u.getName() + " successfully deleted", null, HttpStatus.OK);
         }catch(EntityNotFoundException enfe){
+            //Returning "Bad Request" if no record exists 
             return new ResponseEntity<String>("User Id " + userId + " does not exist", null, HttpStatus.BAD_REQUEST);
         }catch(Exception e){
+            //Returning "Bad Request" for any other possible errors
             return new ResponseEntity<String>(e.getMessage(), null, HttpStatus.BAD_REQUEST);
         }
     }
