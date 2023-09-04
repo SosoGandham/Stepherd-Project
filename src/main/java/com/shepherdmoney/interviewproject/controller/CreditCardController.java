@@ -38,25 +38,32 @@ public class CreditCardController {
         //       Return other appropriate response code for other exception cases
         //       Do not worry about validating the card number, assume card number could be any arbitrary format and length
 
+        //Validating if card is part of the request and if bank is part of the request
+        //If any of this information is missing, we will return as a bad request(400)
         if(payload.getUserId() < 1 || StringUtils.isNullOrEmpty(payload.getCardNumber()) || StringUtils.isNullOrEmpty(payload.getCardIssuanceBank())){
             return new ResponseEntity<Integer>(0, null, HttpStatus.BAD_REQUEST);
         }
-
+        
         try {
             System.out.println("userId-" + payload.getUserId());
+            // Gets user record from the database, based on the given ID
             User u = userRepository.getReferenceById(payload.getUserId());
             System.out.println(u.getId() + "-" + u.getName() + "-" + u.getEmail());
-
+            
+            //Creates the credit card object to store it in the table
             CreditCard cc = new CreditCard();
             cc.setUserId(u.getId());
             cc.setNumber(payload.getCardNumber());
             cc.setIssuanceBank(payload.getCardIssuanceBank());
+            //saves the credit card record to the table with linking to the user 
             creditCardRepository.save(cc);
-
+            
             return new ResponseEntity<Integer>(cc.getId(), null, HttpStatus.CREATED);
         }catch(EntityNotFoundException enfe){
+            //If user does not exist in the database then return "Bad Request"
             return new ResponseEntity<Integer>(0, null, HttpStatus.BAD_REQUEST);
         }catch(Exception e){
+            //Anything else that may result in error then return "Bad Request"
             return new ResponseEntity<Integer>(0, null, HttpStatus.BAD_REQUEST);
         }
 
@@ -66,12 +73,15 @@ public class CreditCardController {
     public ResponseEntity<List<CreditCardView>> getAllCardOfUser(@RequestParam int userId) {
         // TODO: return a list of all credit card associated with the given userId, using CreditCardView class
         //       if the user has no credit card, return empty list, never return null
-
+        //Finds the credit card number given the user ID
         List<CreditCard> list = creditCardRepository.findByUserId(userId);
+        //Creates empty array of credit card view 
         List<CreditCardView> creditCardList = new ArrayList<>();
+        //Converts list of credit cards to list of credit cards view 
         for(CreditCard c: list){
             creditCardList.add(new CreditCardView(c.getIssuanceBank(), c.getNumber()));
         }
+        //returns the list of credit cards(0 or more)
         return new ResponseEntity<List<CreditCardView>>(creditCardList, null, HttpStatus.OK);
     }
 
@@ -79,12 +89,13 @@ public class CreditCardController {
     public ResponseEntity<Integer> getUserIdForCreditCard(@RequestParam String creditCardNumber) {
         // TODO: Given a credit card number, efficiently find whether there is a user associated with the credit card
         //       If so, return the user id in a 200 OK response. If no such user exists, return 400 Bad Request
-
+        //Getting the matching records of the given credit card number
         List<CreditCard> list = creditCardRepository.findByCardNumber(creditCardNumber);
+        //If there are no matching records then we will return "Bad Request"
         if(list == null || list.size() == 0){
             return new ResponseEntity<Integer>(0, null, HttpStatus.BAD_REQUEST);
         }
-
+        //Returns matching user Id of the credit card number
         return new ResponseEntity<Integer>(list.get(0).getUserId(), null, HttpStatus.OK);
     }
 
