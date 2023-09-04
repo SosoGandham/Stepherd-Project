@@ -26,6 +26,8 @@ public class CreditCard {
     private String number;
 
     // TODO: Credit card's owner. For detailed hint, please see User class
+
+    //Added user Id to link or map the credit card to the user
     private int userId;
 
     // TODO: Credit card's balance history. It is a requirement that the dates in the balanceHistory 
