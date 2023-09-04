@@ -13,9 +13,10 @@ import java.util.List;
  */
 @Repository("CreditCardRepo")
 public interface CreditCardRepository extends JpaRepository<CreditCard, Integer> {
+    //Finds the credit card given the user ID
     @Query(value = "SELECT * FROM CREDIT_CARD WHERE USER_ID=?",nativeQuery = true)
     public List<CreditCard> findByUserId(int userId);
-
+    //Finds the user by given card number
     @Query(value = "SELECT * FROM CREDIT_CARD WHERE NUMBER=?",nativeQuery = true)
     public List<CreditCard> findByCardNumber(String cardNumber);
 }
